@@ -1,4 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using System.Diagnostics;
+
 class SayaTubeVideo
 {
     private int id;
@@ -7,10 +9,8 @@ class SayaTubeVideo
 
     public SayaTubeVideo(string title)
     {
-        if (string.IsNullOrEmpty(title) || title.Length > 100)
-        {
-            throw new ArgumentException("Judul tidak boleh kosong dan maksimal 100 karakter");
-        }
+        Debug.Assert(!string.IsNullOrEmpty(title), "Judul tidak boleh null atau kosong.");
+        Debug.Assert(title.Length <= 100, "Judul tidak boleh lebih dari 100 karakter.");
 
         Random random = new Random();
 
@@ -21,12 +21,26 @@ class SayaTubeVideo
 
     public void increasePlayCount(int jumlah)
     {
-        if (jumlah < 0 || jumlah > 10000000)
+        try
         {
-            throw new ArgumentException("Jumlah harus antara 0 dan 10.000.000");
-        }
+            if (jumlah <= 0 || jumlah > 10000000)
+            {
+                throw new ArgumentOutOfRangeException("Jumlah play count harus antara 1 hingga 10.000.000.");
+            }
 
-        this.playCount += jumlah;
+            checked
+            {
+                playCount += jumlah;
+            }
+        }
+        catch (OverflowException)
+        {
+            Console.WriteLine("Error: Terjadi overflow pada play count!");
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
     }
 
     public void printVideoDetails()
@@ -41,12 +55,14 @@ class program
 {
     static void Main()
     {
-        string? v = Console.ReadLine();
-        string nama = v;
 
-        SayaTubeVideo video = new SayaTubeVideo($"Tutorial Design By Contract – {nama}");
 
-        video.increasePlayCount(10);
+        SayaTubeVideo video = new SayaTubeVideo("Tutorial Design By Contract – [APRIL HARDINATA]");
+
+        for (int i = 0; i < 10; i++)
+        {
+            video.increasePlayCount(100000000); 
+        }
 
         video.printVideoDetails();
     }
